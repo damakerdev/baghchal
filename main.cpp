@@ -1,31 +1,28 @@
 #include <iostream>
+#include <vector>
 using namespace std;
 
-void printBoard(char b[]);
-bool hasDiagonals(int row, int col);
-void validMoves(int move);
-void validCaptures(char b[],int tigerIdx);
+struct Direction{
+    int dr;
+    int dc;
+};
 
-//up,down.left right
-int dr[]={-1,1,0,0};
-int dc[]={0,0,1,-1};
-
-//upleft,upright,downleft,downright
-int diag_dr[]={-1,-1,1,1};
-int diag_dc[]={-1,1,-1,1};
-
-int main(){
-    char board[25];
-    for(int i=0;i<25;i++){
-        if(i==0||i==4||i==20||i==24){
-           board[i]='T'; 
-        } else {
-            board[i]='X';
-        }
+vector<Direction> getValidDirs(int r,int c){
+    vector<Direction> dirs = { 
+        //u l d r
+        {-1,0},
+        {1,0},
+        {0,-1},
+        {0,1}
+    };
+    if((r+c)%2==0){
+        //ul ur dl dr
+        dirs.push_back({-1,-1});
+        dirs.push_back({-1,1});
+        dirs.push_back({1,-1});
+        dirs.push_back({1,1});
     }
-    printBoard(board);
-    validMoves(5);
-    return 0;
+    return dirs;
 }
 
 void printBoard(char b[]){
@@ -48,22 +45,46 @@ void validMoves(int move){
     int nidx;
     int r=move/5;
     int c=move%5;
-    for(int j=0;j<4;j++){
-        int nr=r+dr[j];
-        int nc=c+dc[j];
+    for(auto dir:getValidDirs(r,c)){
+        int nr=r+dir.dr;
+        int nc=c+dir.dc;
         if(nr>= 0&&nr <5&&nc>=0&&nc < 5){
             nidx=(nr*5)+nc;
             cout<<nidx<<"\n";
         }
     }
-    if(hasDiagonals(r,c)){
-        for(int j=0;j<4;j++){
-            int nr=r+diag_dr[j];
-            int nc=c+diag_dc[j];
-            if(nr>= 0&&nr <5&&nc>=0&&nc < 5){
-                nidx=(nr*5)+nc;
-                cout<<nidx<<"\n";
+}
+
+void validCaptures(char b[], int tigerIdx){
+    int r=tigerIdx/5;
+    int c=tigerIdx%5;
+    for(auto dir:getValidDirs(r,c)){
+        int gr=r+dir.dr;
+        int gc=c+dir.dc;
+        int tr=r+(2*dir.dr);
+        int tc=c+(2*dir.dc);
+        if(tr>=0&&tr<5&&tc>=0&&tc<5){
+            int goatIdx=(gr*5)+gc;
+            int landIdx=(tr*5)+tc;
+            if(b[goatIdx]=='G'&&b[landIdx]=='X'){
+                cout<<"valid jump for tiger at "<< tigerIdx<< " to jump to "<<landIdx<<" over the goat at "<<goatIdx <<endl;
             }
         }
     }
+}
+
+int main(){
+    char board[25];
+    for(int i=0;i<25;i++){
+        if(i==0||i==4||i==20||i==24){
+           board[i]='T'; 
+        } else {
+            board[i]='X';
+        }
+    }
+    printBoard(board);
+    validMoves(5);
+    board[1]='G';
+    validCaptures(board,0);
+    return 0;
 }

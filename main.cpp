@@ -1,7 +1,9 @@
 #include <iostream>
 #include <vector>
+#include <cmath>
 using namespace std;
 
+int goatsCap=0; 
 struct Direction{
     int dr;
     int dc;
@@ -73,6 +75,60 @@ void validCaptures(char b[], int tigerIdx){
     }
 }
 
+bool placeGoat(char b[],int targetIdx){
+    if(b[targetIdx]=='X'){
+        b[targetIdx]='G';
+        return true;
+    } else {
+        cout<<"occupied"<<endl;
+        return false;
+    }
+}
+
+bool isValidOneStep(int r1,int c1, int r2,int c2){
+    for(auto dir:getValidDirs(r1,c1)){
+        int nextR=r1+dir.dr;
+        int nextC=c1+dir.dc;
+        if(nextR==r2&&nextC==c2){
+            return true;
+        }
+    }
+    return false;
+}
+
+bool movePiece(char b[], int fromIdx, int toIdx, int &goatsCap){
+    if(b[toIdx]!='X'){
+        cout<<"occupied"<<endl;
+        return false;
+    }
+    int r1=fromIdx/5,c1=fromIdx%5;
+    int r2=toIdx/5,c2=toIdx%5;
+    int dr=abs(r2-r1);
+    int dc=abs(c2-c1);
+    if(isValidOneStep(r1,c1,r2,c2)){
+        b[toIdx]=b[fromIdx];
+        b[fromIdx]='X';
+        return true;
+    }
+    if((dr==2||dc==2)&&b[fromIdx]=='T'){
+        int rg=(r1+r2)/2;
+        int cg=(c1+c2)/2;
+        if(isValidOneStep(r1,c1,rg,cg)){
+            int goatIdx=(rg*5)+cg;
+            if(b[goatIdx]=='G'){
+                b[goatIdx]='X';
+                b[toIdx]='T';
+                b[fromIdx]='X';
+                goatsCap++;
+                cout<<"goat captured at ("<<rg<<","<<cg<<"):"<<endl;
+                return true;
+            }
+        }
+    }
+    cout<<"invalid move!"<<endl;
+    return false;
+}
+
 int main(){
     char board[25];
     for(int i=0;i<25;i++){
@@ -83,8 +139,14 @@ int main(){
         }
     }
     printBoard(board);
-    validMoves(5);
-    board[1]='G';
-    validCaptures(board,0);
+    cout<<endl;
+    placeGoat(board,5);    
+    printBoard(board);
+    cout<<endl;
+    movePiece(board,5,6,goatsCap);
+    printBoard(board);
+    cout<<endl;
+    movePiece(board,0,12,goatsCap);
+    printBoard(board);
     return 0;
 }

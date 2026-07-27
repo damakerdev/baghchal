@@ -6,6 +6,38 @@
 using namespace std;
 
 int goatsCap=0; 
+
+
+struct GameState {
+    char board[25];
+    char turn;
+    int unplacedGoats;
+    int capturedGoats;
+    string lastMove;
+    string moveTag;
+};
+
+GameState parseObx(const string& obx){
+    GameState state;
+    stringstream ss(obx);
+    string bStateStr, turnStr,unplacedStr,capStr,moveStr,tagStr;
+    ss>>bStateStr>>turnStr>>unplacedStr>>capStr;
+    if(!(ss>>moveStr)) moveStr="-";
+    if(!(ss>>tagStr)) tagStr="#";
+    int bIdx=0;
+    for(char ch:bStateStr){
+        if(ch!='/'){
+            state.board[bIdx++]=ch;
+        }
+    }
+    state.turn=turnStr[0];
+    state.unplacedGoats=stoi(unplacedStr.substr(1));
+    state.capturedGoats=stoi(capStr.substr(1));
+    state.lastMove=moveStr;
+    state.moveTag=tagStr;
+    return state;
+}
+
 struct Direction{
     int dr;
     int dc;
@@ -152,36 +184,48 @@ int main(){
     cout<<endl;
     movePiece(board,0,12,goatsCap);
     printBoard(board);
+    cout<<endl;
 
-    crow::SimpleApp app;
-    CROW_ROUTE(app, "/")
-    .methods("GET"_method, "OPTIONS"_method)
-    ([](const crow::request& req, crow::response& res) {
-        res.set_header("Access-Control-Allow-Origin", "https://www.baghchal.net");
-        res.set_header("Access-Control-Allow-Methods", "GET, OPTIONS");
-        res.set_header("Access-Control-Allow-Headers", "Content-Type, Authorization");
+    
+    GameState state = parseObx("TXXXT/XXXXX/XXGXX/XXXXX/TXXXT g @19 c0 - -");
+    cout << "Turn: " << state.turn << endl;
+    cout << "Unplaced Goats: " << state.unplacedGoats << endl;
+    cout << "Captured Goats: " << state.capturedGoats << endl;
+    cout << "Board: ";
+    for (int i = 0; i < 25; i++) {
+        cout << state.board[i];
+    }
+    cout << endl;
 
-        if (req.method == crow::HTTPMethod::OPTIONS) {
-            res.code = 200; // Return HTTP 200 OK for preflight
-            res.end();
-            return;
-        }
+    // crow::SimpleApp app;
+    // CROW_ROUTE(app, "/")
+    // .methods("GET"_method, "OPTIONS"_method)
+    // ([](const crow::request& req, crow::response& res) {
+    //     res.set_header("Access-Control-Allow-Origin", "https://www.baghchal.net");
+    //     res.set_header("Access-Control-Allow-Methods", "GET, OPTIONS");
+    //     res.set_header("Access-Control-Allow-Headers", "Content-Type, Authorization");
 
-        crow::json::wvalue response_json;
+    //     if (req.method == crow::HTTPMethod::OPTIONS) {
+    //         res.code = 200; // Return HTTP 200 OK for preflight
+    //         res.end();
+    //         return;
+    //     }
 
-        auto obx = req.url_params.get("obx");
-        if (obx) {
-            response_json["obx"] = "TXXXT/XXXXX/XXGXX/XXXXX/TXXXT g @19 c0 - -";
-            response_json["received_obx"] = obx;
-            res.code = 200;
-        } else {
-            response_json["status"] = "error";
-            response_json["message"] = "Missing obx parameter";
-            res.code = 400; // Bad Request
-        }
-        res.body = response_json.dump();
-        res.end();
-    });
-    app.port(8080).multithreaded().run();
+    //     crow::json::wvalue response_json;
+
+    //     auto obx = req.url_params.get("obx");
+    //     if (obx) {
+    //         response_json["obx"] = "TXXXT/XXXXX/XXGXX/XXXXX/TXXXT g @19 c0 - -";
+    //         response_json["received_obx"] = obx;
+    //         res.code = 200;
+    //     } else {
+    //         response_json["status"] = "error";
+    //         response_json["message"] = "Missing obx parameter";
+    //         res.code = 400; // Bad Request
+    //     }
+    //     res.body = response_json.dump();
+    //     res.end();
+    // });
+    // app.port(8080).multithreaded().run();
     return 0;
 }

@@ -1,14 +1,12 @@
 #include <iostream>
 #include <vector>
 #include <cmath>
+#include <sstream>
+#include <string>
 #include <crow.h>
 #include <crow/middlewares/cors.h>
-#include <string>
 
 using namespace std;
-
-int goatsCap=0; 
-
 
 struct GameState {
     char board[25];
@@ -43,6 +41,22 @@ GameState parseObx(const string& obx){
 ostream& operator<<(ostream& os, const GameState& state){
     os<<"GAME STATE: \nTURN: "<<state.turn<<"\nUNPLACED: "<<state.unplacedGoats<<"\nCAPTURED: "<<state.capturedGoats<<endl;
     return os;
+}
+
+
+string decodeUrl(const string& str){
+    string result="";
+    for(size_t i=0;i<str.length();i++){
+        if(str[i]=='%'&& i+2 <str.length() && str[i+1]=='2'&&(str[i+2]=='0')){
+            result+=' ';
+            i+=2;
+        } else if (str[i]=='+'){
+            result+=' ';
+        } else {
+            result+=str[i];
+        }
+    }
+    return result;
 }
 
 struct Direction{
@@ -81,6 +95,24 @@ int coordToIndex(const string& coord){
     int c=coord[0]-'A';
     int r=coord[1]-'1';
     return (r*5)+c;
+}
+
+string toObx(const GameState& state, const string& executedMoveStr){
+    string obx="";
+    for(int i=0;i<25;i++){
+        if(i>0&&i%5==0){
+            obx+="/";
+        }
+        obx+=state.board[i];
+    }
+    obx+=" ";
+    obx+=state.turn;
+    obx+=" @"+to_string(state.unplacedGoats);
+    obx+=" ";
+    obx+=" c"+to_string(state.capturedGoats);
+    obx+=" "+executedMoveStr;
+    obx+=" "+state.moveTag;
+    return obx;
 }
 
 
@@ -197,53 +229,87 @@ int main(){
             board[i]='X';
         }
     }
-    printBoard(board);
-    cout<<endl;
-    placeGoat(board,5);    
-    printBoard(board);
-    cout<<endl;
-    movePiece(board,5,6,goatsCap);
-    printBoard(board);
-    cout<<endl;
-    movePiece(board,0,12,goatsCap);
-    printBoard(board);
-    cout<<endl;
-    cout<<parseObx("TXXXT/XXXXX/XXGXX/XXXXX/TXXXT g @19 c0 - -")<<endl;
+    // printBoard(board);
+    // cout<<endl;
+    // placeGoat(board,5);    
+    // printBoard(board);
+    // cout<<endl;
+    // movePiece(board,5,6,goatsCap);
+    // printBoard(board);
+    // cout<<endl;
+    // movePiece(board,0,12,goatsCap);
+    // printBoard(board);
+    // cout<<endl;
+    // cout<<parseObx("TXXXT/XXXXX/XXGXX/XXXXX/TXXXT g @19 c0 - -")<<endl;
 
-    cout <<endl;
-    cout<< "index 0 is "<<indexToCoord(0)<<endl;
-    cout<< "coord A3 is "<<coordToIndex("A3")<<endl;
-    cout<<endl;
+    // string myObx = "TXXXT/XXXXX/XXGXX/XXXXX/TXXXT g @19 c0 - -";
+    // GameState state=parseObx(myObx);
+    // cout<<state<<endl;
+    // string obx=toObx(state, "-");
+    // cout<<obx<<endl;
 
-    // crow::SimpleApp app;
-    // CROW_ROUTE(app, "/")
-    // .methods("GET"_method, "OPTIONS"_method)
-    // ([](const crow::request& req, crow::response& res) {
-    //     res.set_header("Access-Control-Allow-Origin", "https://www.baghchal.net");
-    //     res.set_header("Access-Control-Allow-Methods", "GET, OPTIONS");
-    //     res.set_header("Access-Control-Allow-Headers", "Content-Type, Authorization");
+    // cout <<endl;
+    // cout<< "index 0 is "<<indexToCoord(0)<<endl;
+    // cout<< "coord A3 is "<<coordToIndex("A3")<<endl;
+    // cout<<endl;
+    crow::App<crow::CORSHandler> app;
 
-    //     if (req.method == crow::HTTPMethod::OPTIONS) {
-    //         res.code = 200; // Return HTTP 200 OK for preflight
-    //         res.end();
-    //         return;
-    //     }
+    auto& cors = app.get_middleware<crow::CORSHandler>();
+    cors.global()
+        .headers("X-Requested-With", "Content-Type", "Access-Control-Allow-Origin", "Access-Control-Allow-Private-Network")
+        .methods("GET"_method, "OPTIONS"_method)
+        .origin("*");
 
-    //     crow::json::wvalue response_json;
+    CROW_ROUTE(app, "/")
+    .methods("GET"_method, "OPTIONS"_method)
+    ([](const crow::request& req, crow::response& res) {
+        res.set_header("Access-Control-Allow-Origin", "*");
+        res.set_header("Access-Control-Allow-Private-Network", "true");
+        // Tell client we are returning plain text instead of JSON
+        res.set_header("Content-Type", "text/plain");
 
-    //     auto obx = req.url_params.get("obx");
-    //     if (obx) {
-    //         response_json["obx"] = "TXXXT/XXXXX/XXGXX/XXXXX/TXXXT g @19 c0 - -";
-    //         response_json["received_obx"] = obx;
-    //         res.code = 200;
-    //     } else {
-    //         response_json["status"] = "error";
-    //         response_json["message"] = "Missing obx parameter";
-    //         res.code = 400; // Bad Request
-    //     }
-    //     res.body = response_json.dump();
-    //     res.end();
-    // });
-    // app.port(8080).multithreaded().run();
+        if (req.method == crow::HTTPMethod::OPTIONS) {
+            res.code = 200;
+            res.end();
+            return;
+        }
+
+        auto raw_obx = req.url_params.get("obx");
+
+        if (raw_obx != nullptr) {
+            string decoded_obx = decodeUrl(string(raw_obx));
+            
+            try {
+                GameState state = parseObx(decoded_obx);
+                
+                // Construct the OBX string to return
+                string responseObx = toObx(state, state.lastMove);
+
+                res.code = 200;
+                res.body = "{\"obx\":\""+responseObx+"\"}"; // Pure plain text string response
+                cout << "\n========================================" << endl;
+                cout << "[REQUEST RECEIVED]" << endl;
+                cout << "Decoded OBX: " << decoded_obx << endl;
+                cout << state;
+                cout << "========================================" << endl;
+            } catch (const exception& e) {
+                res.code = 400;
+                res.body = "Error: Failed to parse OBX string";
+            }
+        } else {
+            res.code = 400;
+            res.body = "Error: Missing 'obx' parameter";
+        }
+
+        res.end();
+    });
+
+    cout << "\n==================================================" << endl;
+    cout << "  BAGHCHAL ENGINE SERVER RUNNING AT PORT 8080" << endl;
+    cout << "  URL: http://localhost:8080" << endl;
+    cout << "==================================================\n" << endl;
+
+    app.port(8080).multithreaded().run();
     return 0;
+
 }

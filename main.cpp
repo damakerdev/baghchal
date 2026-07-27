@@ -38,6 +38,11 @@ GameState parseObx(const string& obx){
     return state;
 }
 
+ostream& operator<<(ostream& os, const GameState& state){
+    os<<"GAME STATE: \nTURN: "<<state.turn<<"\nUNPLACED: "<<state.unplacedGoats<<"\nCAPTURED: "<<state.capturedGoats<<endl;
+    return os;
+}
+
 struct Direction{
     int dr;
     int dc;
@@ -185,17 +190,7 @@ int main(){
     movePiece(board,0,12,goatsCap);
     printBoard(board);
     cout<<endl;
-
-    
-    GameState state = parseObx("TXXXT/XXXXX/XXGXX/XXXXX/TXXXT g @19 c0 - -");
-    cout << "Turn: " << state.turn << endl;
-    cout << "Unplaced Goats: " << state.unplacedGoats << endl;
-    cout << "Captured Goats: " << state.capturedGoats << endl;
-    cout << "Board: ";
-    for (int i = 0; i < 25; i++) {
-        cout << state.board[i];
-    }
-    cout << endl;
+    cout<<parseObx("TXXXT/XXXXX/XXGXX/XXXXX/TXXXT g @19 c0 - -")<<endl;
 
     // crow::SimpleApp app;
     // CROW_ROUTE(app, "/")

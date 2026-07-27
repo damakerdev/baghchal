@@ -3,6 +3,8 @@
 #include <cmath>
 #include <crow.h>
 #include <crow/middlewares/cors.h>
+#include <string>
+
 using namespace std;
 
 int goatsCap=0; 
@@ -65,6 +67,22 @@ vector<Direction> getValidDirs(int r,int c){
     }
     return dirs;
 }
+
+string indexToCoord(int idx){
+    int r=idx/5;
+    int c=idx%5;
+    char colChar='A'+c;
+    char rowChar='1'+r;
+    return string(1,colChar)+string(1,rowChar);
+}
+
+int coordToIndex(const string& coord){
+    if(coord.length()<2) return -1;
+    int c=coord[0]-'A';
+    int r=coord[1]-'1';
+    return (r*5)+c;
+}
+
 
 void printBoard(char b[]){
     for(int i=0;i<25;i++){
@@ -191,6 +209,11 @@ int main(){
     printBoard(board);
     cout<<endl;
     cout<<parseObx("TXXXT/XXXXX/XXGXX/XXXXX/TXXXT g @19 c0 - -")<<endl;
+
+    cout <<endl;
+    cout<< "index 0 is "<<indexToCoord(0)<<endl;
+    cout<< "coord A3 is "<<coordToIndex("A3")<<endl;
+    cout<<endl;
 
     // crow::SimpleApp app;
     // CROW_ROUTE(app, "/")

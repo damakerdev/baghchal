@@ -1,6 +1,8 @@
 #include <iostream>
 #include <vector>
 #include <cmath>
+#include <crow.h>
+#include <crow/middlewares/cors.h>
 using namespace std;
 
 int goatsCap=0; 
@@ -129,6 +131,8 @@ bool movePiece(char b[], int fromIdx, int toIdx, int &goatsCap){
     return false;
 }
 
+
+
 int main(){
     char board[25];
     for(int i=0;i<25;i++){
@@ -148,5 +152,36 @@ int main(){
     cout<<endl;
     movePiece(board,0,12,goatsCap);
     printBoard(board);
+
+    crow::SimpleApp app;
+    CROW_ROUTE(app, "/")
+    .methods("GET"_method, "OPTIONS"_method)
+    ([](const crow::request& req, crow::response& res) {
+        res.set_header("Access-Control-Allow-Origin", "https://www.baghchal.net");
+        res.set_header("Access-Control-Allow-Methods", "GET, OPTIONS");
+        res.set_header("Access-Control-Allow-Headers", "Content-Type, Authorization");
+
+        if (req.method == crow::HTTPMethod::OPTIONS) {
+            res.code = 200; // Return HTTP 200 OK for preflight
+            res.end();
+            return;
+        }
+
+        crow::json::wvalue response_json;
+
+        auto obx = req.url_params.get("obx");
+        if (obx) {
+            response_json["obx"] = "TXXXT/XXXXX/XXGXX/XXXXX/TXXXT g @19 c0 - -";
+            response_json["received_obx"] = obx;
+            res.code = 200;
+        } else {
+            response_json["status"] = "error";
+            response_json["message"] = "Missing obx parameter";
+            res.code = 400; // Bad Request
+        }
+        res.body = response_json.dump();
+        res.end();
+    });
+    app.port(8080).multithreaded().run();
     return 0;
 }

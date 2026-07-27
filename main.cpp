@@ -17,6 +17,67 @@ struct GameState {
     string moveTag;
 };
 
+struct Direction{
+    int dr;
+    int dc;
+};
+
+struct Move{
+    int from;
+    int to;
+    bool isCaptured;
+    int capturedIdx;
+};
+
+struct CaptureJump {
+    int to;
+    int midpoint;
+};
+
+const std::vector<int> legalMovesConnMatrix[25]={
+    {1, 5, 6},{2, 0, 6},{3, 1, 7, 6, 8},{4, 2, 8},{3, 9, 8},
+    {6, 10, 0}, {7, 5, 11, 1, 10, 2, 12, 0}, {8, 6, 12, 2}, {9, 7, 13, 3, 12, 4, 14, 2}, {8, 14, 4},
+    {11, 15, 5, 6, 16}, {12, 10, 16, 6}, {13, 11, 17, 7, 16, 8, 18, 6}, {14, 12, 18, 8},{13, 19, 9, 18, 8},{16, 20, 10}, {17, 15, 21, 11, 20, 12, 22, 10}, {18, 16, 22, 12},{19, 17, 23, 13, 22, 14, 24, 12}, {18, 24, 14},
+    {21, 15, 16}, {22, 20, 16}, {23, 21, 17, 18, 16}, {24, 22, 18}, {23, 19, 18}
+};
+
+const std::vector<CaptureJump> captureMoveConnMatrix[25]={
+        {{2, 1}, {10, 5}, {12, 6}},
+        {{3, 2}, {11, 6}},
+        {{4, 3}, {0, 1}, {12, 7}, {10, 6}, {14, 8}},
+        {{1, 2}, {13, 8}},
+        {{2, 3}, {14, 9}, {12, 8}},
+        {{7, 6}, {15, 10}},
+        {{8, 7}, {16, 11}, {18, 12}},
+        {{9, 8}, {5, 6}, {17, 12}},
+        {{6, 7}, {18, 13}, {16, 12}},
+        {{7, 8}, {19, 14}},
+        {{12, 11}, {20, 15}, {0, 5}, {2, 6}, {22, 16}},
+        {{13, 12}, {21, 16}, {1, 6}},
+        {{14, 13}, {10, 11}, {22, 17}, {2, 7}, {20, 16}, {4, 8}, {24, 18}, {0, 6}},
+        {{11, 12}, {23, 18}, {3, 8}},
+        {{12, 13}, {24, 19}, {4, 9}, {22, 18}, {2, 8}},
+        {{17, 16}, {5, 10}},
+        {{18, 17}, {6, 11}, {8, 12}},
+        {{19, 18}, {15, 16}, {7, 12}},
+        {{16, 17}, {8, 13}, {6, 12}},
+        {{17, 18}, {9, 14}},
+        {{22, 21}, {10, 15}, {12, 16}},
+        {{23, 22}, {11, 16}},
+        {{24, 23}, {20, 21}, {12, 17}, {14, 18}, {10, 16}},
+        {{21, 22}, {13, 18}},
+        {{22, 23}, {19, 18}, {12, 18}}
+};
+
+
+const int tigerPositionWeights[25]{
+    6,  5, 10,  5,  6,
+    5, 11,  7, 11,  5,
+   10,  7, 16,  7, 10,
+    5, 11,  7, 11,  5,
+    6,  5, 10,  5,  6
+};
+
 GameState parseObx(const string& obx){
     GameState state;
     stringstream ss(obx);
@@ -57,29 +118,6 @@ string decodeUrl(const string& str){
         }
     }
     return result;
-}
-
-struct Direction{
-    int dr;
-    int dc;
-};
-
-vector<Direction> getValidDirs(int r,int c){
-    vector<Direction> dirs = { 
-        //u l d r
-        {-1,0},
-        {1,0},
-        {0,-1},
-        {0,1}
-    };
-    if((r+c)%2==0){
-        //ul ur dl dr
-        dirs.push_back({-1,-1});
-        dirs.push_back({-1,1});
-        dirs.push_back({1,-1});
-        dirs.push_back({1,1});
-    }
-    return dirs;
 }
 
 string indexToCoord(int idx){
@@ -132,37 +170,6 @@ bool hasDiagonals(int row, int col){
     }
 }
 
-void validMoves(int move){
-    int nidx;
-    int r=move/5;
-    int c=move%5;
-    for(auto dir:getValidDirs(r,c)){
-        int nr=r+dir.dr;
-        int nc=c+dir.dc;
-        if(nr>= 0&&nr <5&&nc>=0&&nc < 5){
-            nidx=(nr*5)+nc;
-            cout<<nidx<<"\n";
-        }
-    }
-}
-
-void validCaptures(char b[], int tigerIdx){
-    int r=tigerIdx/5;
-    int c=tigerIdx%5;
-    for(auto dir:getValidDirs(r,c)){
-        int gr=r+dir.dr;
-        int gc=c+dir.dc;
-        int tr=r+(2*dir.dr);
-        int tc=c+(2*dir.dc);
-        if(tr>=0&&tr<5&&tc>=0&&tc<5){
-            int goatIdx=(gr*5)+gc;
-            int landIdx=(tr*5)+tc;
-            if(b[goatIdx]=='G'&&b[landIdx]=='X'){
-                cout<<"valid jump for tiger at "<< tigerIdx<< " to jump to "<<landIdx<<" over the goat at "<<goatIdx <<endl;
-            }
-        }
-    }
-}
 
 bool placeGoat(char b[],int targetIdx){
     if(b[targetIdx]=='X'){
@@ -174,51 +181,103 @@ bool placeGoat(char b[],int targetIdx){
     }
 }
 
-bool isValidOneStep(int r1,int c1, int r2,int c2){
-    for(auto dir:getValidDirs(r1,c1)){
-        int nextR=r1+dir.dr;
-        int nextC=c1+dir.dc;
-        if(nextR==r2&&nextC==c2){
-            return true;
+
+std::vector<Move> generateMoves(const GameState& state){
+    std::vector<Move> moves;
+
+    if(state.turn=='g' && state.unplacedGoats>0){
+        for(int i=0;i<25;i++){
+            if(state.board[i]=='X'){
+                moves.push_back({-1,i,false,-1});
+            }
+        }
+        return moves;
+    }
+
+    char currentPiece=(state.turn=='g')?'G':'T';
+
+    for(int from=0;from<25;from++){
+        if(state.board[from]==currentPiece){
+            for(int to:legalMovesConnMatrix[from]){
+                if(state.board[to]=='X'){
+                    moves.push_back({from,to,false,-1});
+                }
+            }
+
+            if(currentPiece=='T'){
+                for(const auto& jump: captureMoveConnMatrix[from]){
+                    if(state.board[jump.to]=='X'&&state.board[jump.midpoint]=='G'){
+                        moves.push_back({from,jump.to,true,jump.midpoint});
+                    }
+                }
+            }
+
         }
     }
-    return false;
+    return moves;
 }
 
-bool movePiece(char b[], int fromIdx, int toIdx, int &goatsCap){
-    if(b[toIdx]!='X'){
-        cout<<"occupied"<<endl;
-        return false;
+GameState applyMove(const GameState& current, const Move& move){
+    GameState nextState = current;
+
+    if(current.turn=='g'&& move.from==-1){
+        nextState.board[move.to]='G';
+        nextState.unplacedGoats--;
+        nextState.lastMove=indexToCoord(move.to);
+    } else {
+        char temp=nextState.board[move.from];
+        nextState.board[move.from]='X';
+        nextState.board[move.to]=temp;
+        if(move.isCaptured){
+            nextState.capturedGoats++;
+            nextState.board[move.capturedIdx]='X';
+            nextState.lastMove=indexToCoord(move.from)+indexToCoord(move.to);
+
+        } else {
+            nextState.lastMove=indexToCoord(move.from)+indexToCoord(move.to);
+        }
     }
-    int r1=fromIdx/5,c1=fromIdx%5;
-    int r2=toIdx/5,c2=toIdx%5;
-    int dr=abs(r2-r1);
-    int dc=abs(c2-c1);
-    if(isValidOneStep(r1,c1,r2,c2)){
-        b[toIdx]=b[fromIdx];
-        b[fromIdx]='X';
-        return true;
+
+    nextState.turn= (current.turn=='g')?'t':'g';
+    return nextState;
+}
+
+int evaluateBoard(const GameState& state){
+    if(state.capturedGoats>=5){
+        return 10000;
     }
-    if((dr==2||dc==2)&&b[fromIdx]=='T'){
-        int rg=(r1+r2)/2;
-        int cg=(c1+c2)/2;
-        if(isValidOneStep(r1,c1,rg,cg)){
-            int goatIdx=(rg*5)+cg;
-            if(b[goatIdx]=='G'){
-                b[goatIdx]='X';
-                b[toIdx]='T';
-                b[fromIdx]='X';
-                goatsCap++;
-                cout<<"goat captured at ("<<rg<<","<<cg<<"):"<<endl;
-                return true;
+
+    GameState tempState=state;
+    tempState.turn ='t';
+    int tigerMovesCount=0;
+    for(int from=0;from<25;++from){
+        if(state.board[from]=='T'){
+            for(int to:legalMovesConnMatrix[from]){
+                if(state.board[to]=='X') tigerMovesCount++;
+            }
+
+            for(const auto& jump: captureMoveConnMatrix[from]){
+                if(state.board[jump.to]=='X'&&state.board[jump.midpoint]=='G'){
+                    tigerMovesCount++;
+                }
             }
         }
     }
-    cout<<"invalid move!"<<endl;
-    return false;
+
+    if(tigerMovesCount==0){
+        return -10000;
+    }
+    int score=0;
+    score+=state.capturedGoats*500;
+    for(int i=0;i<25;++i){
+        if(state.board[i]=='T'){
+            score+=tigerPositionWeights[i]*60;
+        } else if(state.board[i]=='G') {
+            score-=tigerPositionWeights[i]*5;
+        }
+    }
+    return score;
 }
-
-
 
 int main(){
     char board[25];
@@ -229,29 +288,7 @@ int main(){
             board[i]='X';
         }
     }
-    // printBoard(board);
-    // cout<<endl;
-    // placeGoat(board,5);    
-    // printBoard(board);
-    // cout<<endl;
-    // movePiece(board,5,6,goatsCap);
-    // printBoard(board);
-    // cout<<endl;
-    // movePiece(board,0,12,goatsCap);
-    // printBoard(board);
-    // cout<<endl;
-    // cout<<parseObx("TXXXT/XXXXX/XXGXX/XXXXX/TXXXT g @19 c0 - -")<<endl;
 
-    // string myObx = "TXXXT/XXXXX/XXGXX/XXXXX/TXXXT g @19 c0 - -";
-    // GameState state=parseObx(myObx);
-    // cout<<state<<endl;
-    // string obx=toObx(state, "-");
-    // cout<<obx<<endl;
-
-    // cout <<endl;
-    // cout<< "index 0 is "<<indexToCoord(0)<<endl;
-    // cout<< "coord A3 is "<<coordToIndex("A3")<<endl;
-    // cout<<endl;
     crow::App<crow::CORSHandler> app;
 
     auto& cors = app.get_middleware<crow::CORSHandler>();
@@ -281,24 +318,51 @@ int main(){
             
             try {
                 GameState state = parseObx(decoded_obx);
-                
-                // Construct the OBX string to return
-                string responseObx = toObx(state, state.lastMove);
 
-                res.code = 200;
-                res.body = "{\"obx\":\""+responseObx+"\"}"; // Pure plain text string response
-                cout << "\n========================================" << endl;
-                cout << "[REQUEST RECEIVED]" << endl;
-                cout << "Decoded OBX: " << decoded_obx << endl;
-                cout << state;
-                cout << "========================================" << endl;
+                vector<Move> legalMoves=generateMoves(state);
+
+                if(!legalMoves.empty()){
+                    Move bestMove=legalMoves[0];
+                    int bestScore = (state.turn=='t')?-100000:100000;
+                    for(const auto& move: legalMoves){
+                        GameState simState=applyMove(state,move);
+                        int score=evaluateBoard(simState);
+                        if(state.turn=='t'){
+                            if(score>bestScore){
+                                bestScore=score;
+                                bestMove=move;
+                            }
+                        } else {
+                            if(score<bestScore){
+                                bestScore=score;
+                                bestMove=move;
+                            }
+                        }
+                    }
+
+                    GameState nextState = applyMove(state,bestMove);
+                    string responseObx= toObx(nextState,nextState.lastMove);
+                    
+                    res.code = 200;
+                    res.body = "{\"obx\":\""+responseObx+"\"}"; // Pure plain text string response
+                    cout << "\n========================================" << endl;
+                    cout << "MOVE EXECUTED: "<< nextState.lastMove << endl;
+                    cout << "EVAL SCORE: " << bestScore << endl;
+                    cout << "NEW OBX: " << responseObx<<endl;
+                    cout << "========================================" << endl;
+                } else {
+                    string responseObx=toObx(state,"-");
+                    res.code=200;
+                    res.body = "{\"obx\":\"" + responseObx + "\"}";
+                }
+
             } catch (const exception& e) {
                 res.code = 400;
-                res.body = "Error: Failed to parse OBX string";
+                res.body = "{\"error\":\"Failed to parse OBX string\"}";
             }
         } else {
             res.code = 400;
-            res.body = "Error: Missing 'obx' parameter";
+            res.body = "{\"error\":\"Missing 'obx' parameter\"}";
         }
 
         res.end();

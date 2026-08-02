@@ -5,12 +5,16 @@ const game = new Baghchal('#myBaghchalBoard', initialObx, {
     loopCaptureAnimation: true,
     showStateInfo: true,
     acceptMouseInput: true,
+    accentColor: '#f8fafc',
     onPlayerMove: (requestedObx) => sendState(requestedObx)
 });
 
 const apiUrlInput = document.getElementById('botApiUrl');
 const saveApiBtn = document.getElementById('saveApiBtn');
 const apiStatus = document.getElementById('apiStatus');
+const restartBtn = document.getElementById('restartBtn');
+
+const BOT_DELAY=2000;
 
 if (localStorage.getItem('baghchal_bot_url')) {
     apiUrlInput.value = localStorage.getItem('baghchal_bot_url');
@@ -22,6 +26,20 @@ saveApiBtn.addEventListener('click', () => {
     apiStatus.style.color = '#4caf50';
     setTimeout(() => { apiStatus.textContent = 'Idle'; apiStatus.style.color = '#888'; }, 2000);
 });
+
+restartBtn.addEventListener('click',()=>{
+    game.setObx(initialObx);
+    game.setAcceptMouseInput(true);
+    apiStatus.textContent='Idle';
+    apiStatus.style.color='#4caf50';
+    document.getElementById('gameOverModal').classList.add('hidden');
+    updateTurnIndicator();
+})
+
+
+function wait(ms){
+    return new Promise(resolve=>setTimeout(resolve,ms));
+}
 
 async function sendState(requestedObx) {
     const apiUrl = apiUrlInput.value.trim();
@@ -35,7 +53,10 @@ async function sendState(requestedObx) {
     apiStatus.style.color = '#ff9800';
     try {
         const url = `${apiUrl}?obx=${encodeURIComponent(requestedObx)}`;
-        const res = await fetch(url, { method: 'GET' });   // server jasto chahincha, testai
+        const [res] = await Promise.all([
+            fetch(url, { method: 'GET' }),
+            wait(BOT_DELAY)
+        ]); 
 
         if (!res.ok) throw new Error(`server returned HTTP ${res.status}`);
 
@@ -44,6 +65,7 @@ async function sendState(requestedObx) {
 
         if (newObx && typeof newObx === 'string') {
             game.setObx(newObx);
+            updateTurnIndicator();
             const status=Baghchal.isWin(newObx);
             if(status.gameOver){
                 game.setAcceptMouseInput(false);

@@ -7,7 +7,7 @@
     <link rel="shortcut icon" href="favicon.ico" type="image/x-icon">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;800&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@300;400;600;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
@@ -18,10 +18,13 @@
         </header>
         <div class="sub-container">
             <div id="myBaghchalBoard"></div> 
-            <div class="api-config" style="margin: 15px 0; display: flex; gap: 8px; justify-content: center; align-items: center; flex-direction:column">
-                <input type="url" name="botApiUrl" id="botApiUrl" style="padding: 8px 12px; border-radius: 6px; border: 1px solid #ccc; width: 280px;" />
-                <button id="saveApiBtn" class="btn primary-btn" style="padding: 8px 16px">Set API</button>
-                <span id="apiStatus" style="font-size: 0.85rem; color: #888">Idle</span>
+            <div class="sidebar">
+                <button id="restartBtn" class="btn primary-btn" style="margin-top:12px; padding:8px 16px;">Restart Game</button>
+                <div class="api-config" style="margin: 15px 0; display: flex; gap: 8px; justify-content: center; align-items: center; flex-direction:column">
+                    <input type="url" name="botApiUrl" id="botApiUrl" style="padding: 8px 12px; border-radius: 6px; border: 1px solid #ccc; width: 280px;" />
+                    <button id="saveApiBtn" class="btn primary-btn" style="padding: 8px 16px">Set API</button>
+                    <span id="apiStatus" style="font-size: 0.85rem; color: #888">Idle</span>
+                </div>
             </div>
         </div>
     </div>

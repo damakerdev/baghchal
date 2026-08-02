@@ -19,7 +19,7 @@
 }
 
 body {
-    font-family: 'Outfit', sans-serif;
+    font-family: 'IBM Plex Sans', sans-serif;
     background-color: var(--bg-primary);
     color: var(--text-primary);
     min-height: 100vh;
@@ -76,6 +76,13 @@ body {
     gap: 2rem;
     align-items:center;
     justify-content: center;
+}
+
+.sidebar {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap:30px;
 }
 
 .game-content {
@@ -273,8 +280,8 @@ canvas {
 }
 
 .primary-btn:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 10px 15px -3px rgba(59, 130, 246, 0.5);
+    transform: scale(0.98);
+    box-shadow: 0 10px 15px -3px rgba(59, 131, 246, 0.185);
 }
 
 .primary-btn:active {

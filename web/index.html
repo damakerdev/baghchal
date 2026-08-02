@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Baghchal - Play with Bot</title>
+    <link rel="shortcut icon" href="favicon.ico" type="image/x-icon">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="app-container">
+        <header class="app-header">
+            <h1>Baghchal <span>AI</span></h1>
+            <p>Play the traditional game against a C++ Bot Server</p>
+        </header>
+        <div class="sub-container">
+            <div id="myBaghchalBoard"></div> 
+            <div class="api-config" style="margin: 15px 0; display: flex; gap: 8px; justify-content: center; align-items: center; flex-direction:column">
+                <input type="url" name="botApiUrl" id="botApiUrl" style="padding: 8px 12px; border-radius: 6px; border: 1px solid #ccc; width: 280px;" />
+                <button id="saveApiBtn" class="btn primary-btn" style="padding: 8px 16px">Set API</button>
+                <span id="apiStatus" style="font-size: 0.85rem; color: #888">Idle</span>
+            </div>
+        </div>
+    </div>
+
+    <div id="gameOverModal" class="modal hidden">
+        <div class="modal-content">
+            <h2 id="modalTitle">Game Over</h2>
+            <p id="modalMessage">You won!</p>
+            <button id="modalCloseBtn" class="btn primary-btn">Okay</button>
+        </div>
+    </div>
+
+    <script type="module" src="../lib/baghchal.js"></script>
+    <script type="module" src="game.js"></script>
+</body>
+</html>

@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Baghchal - Play with Bot</title>
+    <title>BlackBird - Play Baghchal with Bot</title>
     <link rel="shortcut icon" href="favicon.ico" type="image/x-icon">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -13,20 +13,26 @@
 <body>
     <div class="app-container">
         <header class="app-header">
-            <h1>Baghchal <span>AI</span></h1>
-            <p>Play the traditional game against a C++ Bot Server</p>
+            <h1>🐦‍⬛ Blackbird</h1>
+            <p>A Baghchal engine in the making</p>
         </header>
-        <div class="sub-container">
+        <div class="game-wrapper">
             <div id="myBaghchalBoard"></div> 
-            <div class="sidebar">
-                <button id="restartBtn" class="btn primary-btn" style="margin-top:12px; padding:8px 16px;">Restart Game</button>
-                <div class="api-config" style="margin: 15px 0; display: flex; gap: 8px; justify-content: center; align-items: center; flex-direction:column">
-                    <input type="url" name="botApiUrl" id="botApiUrl" style="padding: 8px 12px; border-radius: 6px; border: 1px solid #ccc; width: 280px;" />
-                    <button id="saveApiBtn" class="btn primary-btn" style="padding: 8px 16px">Set API</button>
-                    <span id="apiStatus" style="font-size: 0.85rem; color: #888">Idle</span>
+
+            <div class="controls-row">
+                <button id="restartBtn" class="btn btn-primary">New Game</button>
+                          
+                <div class="api-config">
+                    <input type="url" name="botApiUrl" id="botApiUrl" placeholder="Bot API URL..." />
+                    <button id="saveApiBtn" class="btn btn-secondary">Connect</button>
                 </div>
             </div>
         </div>
+        <div id="apiStatus" class="status-indicator">Status: Idle</div>
+
+        <footer class="credits">
+                Made with ❤️ by <span class="author">damakerdev</span>
+        </footer>
     </div>
 
     <div id="gameOverModal" class="modal hidden">
@@ -36,6 +42,7 @@
             <button id="modalCloseBtn" class="btn primary-btn">Okay</button>
         </div>
     </div>
+
 
     <script type="module" src="../lib/baghchal.js"></script>
     <script type="module" src="game.js"></script>

@@ -1,15 +1,22 @@
 :root {
-    --bg-primary: #0f172a;
-    --bg-secondary: #1e293b;
-    --accent-primary: #3b82f6;
-    --accent-hover: #2563eb;
-    --text-primary: #f8fafc;
-    --text-secondary: #94a3b8;
-    --border-color: #334155;
-    --danger: #ef4444;
-    --success: #10b981;
-    --glass-bg: rgba(30, 41, 59, 0.7);
-    --glass-border: rgba(255, 255, 255, 0.1);
+    /* Earthy Green/Brown Palette */
+    --bg-primary: #1e221b;        /* Soft olive dark background */
+    --card-bg: #282e24;           /* Slightly lighter container fill */
+    
+    /* Duolingo-Style Button Colors */
+    --green-main: #439404;        /* Vibrant green button top */
+    --green-shadow: #234e04;      /* Darker green button depth */
+    
+    --brown-main: #a26a38;        /* Warm brown button top */
+    --brown-shadow: #7e5027;      /* Darker brown button depth */
+
+    --neutral-main: #8ac557;      /* Slate-gray olive top */
+    --neutral-shadow: #abd88a;    /* Slate-gray olive depth */
+
+    --text-primary: #ffffff;
+    --text-secondary: #a3ac9c;
+    --border-subtle: #31372b;
+    --input-bg: #141712;
 }
 
 * {
@@ -26,416 +33,234 @@ body {
     display: flex;
     justify-content: center;
     align-items: center;
-    background-image: 
-        radial-gradient(at 0% 0%, hsla(253,16%,7%,1) 0, transparent 50%), 
-        radial-gradient(at 50% 0%, hsla(225,39%,30%,0.2) 0, transparent 50%), 
-        radial-gradient(at 100% 0%, hsla(339,49%,30%,0.2) 0, transparent 50%);
-    background-attachment: fixed;
+    padding: 1.5rem;
 }
 
+/* Single-Column Container */
 .app-container {
-    max-width: 1100px;
     width: 100%;
-    padding: 2rem;
+    max-width: 650px;
     display: flex;
     flex-direction: column;
-    gap: 2rem;
+    align-items: center;
+    gap: 1.25rem;
 }
 
 .app-header {
     text-align: center;
-    animation: fadeInDown 0.8s ease-out;
 }
 
 .app-header h1 {
-    font-size: 3rem;
+    font-size: 2.2rem;
     font-weight: 800;
-    letter-spacing: -1px;
-    margin-bottom: 0.5rem;
-    background: linear-gradient(to right, #60a5fa, #a78bfa);
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
+    color: #f0f4ec;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
 }
 
-.app-header h1 span {
-    font-size: 1.5rem;
-    vertical-align: super;
-    background: var(--danger);
-    -webkit-text-fill-color: white;
+.app-header .badge {
+    font-size: 0.85rem;
+    background: var(--brown-main);
+    color: white;
     padding: 0.2rem 0.5rem;
-    border-radius: 0.5rem;
+    border-radius: 6px;
+    font-weight: 700;
 }
 
 .app-header p {
     color: var(--text-secondary);
-    font-size: 1.1rem;
+    font-size: 0.95rem;
+    margin-top: 0.2rem;
 }
 
-.sub-container {
-    display: flex;
-    gap: 2rem;
-    align-items:center;
-    justify-content: center;
-}
-
-.sidebar {
+/* Board Wrapper */
+.game-wrapper {
+    width: 100%;
     display: flex;
     flex-direction: column;
     align-items: center;
-    gap:30px;
-}
-
-.game-content {
-    display: flex;
-    gap: 2rem;
-    flex-wrap: wrap;
-    justify-content: center;
-    align-items: flex-start;
+    gap: 1rem;
 }
 
 .board-container {
-    position: relative;
-    background: var(--glass-bg);
-    border: 1px solid var(--glass-border);
-    border-radius: 1.5rem;
-    padding: 1rem;
-    box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
-    backdrop-filter: blur(10px);
-    animation: fadeInLeft 0.8s ease-out;
-}
-
-canvas {
-    border-radius: 1rem;
-    background-color: #dfd7c5; /* To match board texture better */
-    box-shadow: inset 0 0 20px rgba(0,0,0,0.2);
-    cursor: crosshair;
-}
-
-.loading-overlay {
-    position: absolute;
-    top: 0;
-    left: 0;
     width: 100%;
-    height: 100%;
-    background: rgba(15, 23, 42, 0.8);
-    backdrop-filter: blur(4px);
-    border-radius: 1.5rem;
     display: flex;
-    flex-direction: column;
     justify-content: center;
-    align-items: center;
-    z-index: 10;
-    transition: opacity 0.3s;
 }
 
-.loading-overlay.hidden {
-    opacity: 0;
-    pointer-events: none;
+/* Canvas Sizing */
+canvas {
+    border-radius: 12px;
+    background-color: #e3d3b7; 
+    display: block;
+    width: 100% !important;     
+    max-width: 600px;
+    height: auto !important;
 }
 
-.spinner {
-    width: 50px;
-    height: 50px;
-    border: 5px solid var(--glass-border);
-    border-top-color: var(--accent-primary);
-    border-radius: 50%;
-    animation: spin 1s linear infinite;
-    margin-bottom: 1rem;
+
+/* Bottom Controls Row */
+.controls-row {
+    width: 100%;
+    margin-top: 2rem;
+    max-width: 420px;
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
 }
 
-.control-panel {
+.api-config {
+    display: flex;
+    gap: 0.5rem;
     flex: 1;
-    min-width: 320px;
-    display: flex;
-    flex-direction: column;
-    gap: 1.5rem;
-    animation: fadeInRight 0.8s ease-out;
 }
 
-.panel-section {
-    background: var(--glass-bg);
-    border: 1px solid var(--glass-border);
-    border-radius: 1rem;
-    padding: 1.5rem;
-    backdrop-filter: blur(10px);
-    box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
-    transition: transform 0.3s ease, box-shadow 0.3s ease;
-}
-
-.panel-section:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.2);
-}
-
-.panel-section h2 {
-    font-size: 1.2rem;
-    color: var(--text-primary);
-    margin-bottom: 1.2rem;
-    border-bottom: 1px solid var(--border-color);
-    padding-bottom: 0.5rem;
-}
-
-.input-group {
-    display: flex;
-    flex-direction: column;
-    gap: 0.5rem;
-}
-
-.input-group label {
-    font-size: 0.9rem;
-    color: var(--text-secondary);
-}
-
-.input-group input {
-    background: rgba(0,0,0,0.2);
-    border: 1px solid var(--border-color);
-    color: var(--text-primary);
-    padding: 0.75rem 1rem;
-    border-radius: 0.5rem;
-    font-family: inherit;
-    font-size: 1rem;
-    transition: border-color 0.3s, box-shadow 0.3s;
-}
-
-.input-group input:focus {
+.api-config input {
+    flex: 1;
+    background-color: var(--input-bg);
+    border: none;
     outline: none;
-    border-color: var(--accent-primary);
-    box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.3);
-}
-
-.status-grid {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 1rem;
-}
-
-.status-card {
-    background: rgba(0,0,0,0.2);
-    padding: 1rem;
-    border-radius: 0.75rem;
-    display: flex;
-    flex-direction: column;
-    gap: 0.5rem;
-    border: 1px solid transparent;
-    transition: border-color 0.3s;
-}
-
-.status-card:hover {
-    border-color: var(--glass-border);
-}
-
-.status-card .label {
+    color: var(--text-primary);
+    padding: 0.55rem 0.85rem;
+    border-radius: 8px;
+    font-family: inherit;
     font-size: 0.85rem;
+}
+
+.status-indicator {
+    font-size: 0.8rem;
     color: var(--text-secondary);
+    text-align: center;
+}
+
+/* ==========================================================================
+   Duolingo-Style 3D Buttons (Slightly Reduced Size & Microinteractions)
+   ========================================================================== */
+.btn {
+    border: none;
+    border-radius: 8px;
+    padding: 0.55rem 1rem;       /* Slightly reduced padding */
+    font-family: inherit;
+    font-size: 0.85rem;          /* Compact font size */
+    font-weight: 700;
     text-transform: uppercase;
     letter-spacing: 0.5px;
-}
-
-.status-card .value {
-    font-size: 1.5rem;
-    font-weight: 600;
-}
-
-.status-card .value.highlight {
-    color: var(--accent-primary);
-    font-size: 1.2rem;
-}
-
-.status-card .value.danger {
-    color: var(--danger);
-}
-
-.flex-value {
-    display: flex;
-    align-items: center;
-    gap: 0.5rem;
-}
-
-.turn-icon {
-    width: 24px;
-    height: 24px;
-    filter: drop-shadow(0 2px 4px rgba(0,0,0,0.5));
-}
-
-.btn {
-    width: 100%;
-    padding: 0.875rem 1.5rem;
-    border: none;
-    border-radius: 0.5rem;
-    font-family: inherit;
-    font-size: 1.1rem;
-    font-weight: 600;
     cursor: pointer;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    gap: 0.5rem;
-    transition: all 0.3s ease;
-}
-
-.primary-btn {
-    background: linear-gradient(135deg, var(--accent-primary), var(--accent-hover));
-    color: white;
-    box-shadow: 0 4px 6px -1px rgba(59, 130, 246, 0.4);
-}
-
-.primary-btn:hover {
-    transform: scale(0.98);
-    box-shadow: 0 10px 15px -3px rgba(59, 131, 246, 0.185);
-}
-
-.primary-btn:active {
-    transform: translateY(0);
-}
-
-.difficulty-selector {
-    margin-top: 1.5rem;
-}
-
-.difficulty-selector label {
-    display: block;
-    margin-bottom: 0.5rem;
-    color: var(--text-secondary);
-    font-size: 0.9rem;
-}
-
-.radio-group {
-    display: flex;
-    gap: 1rem;
-}
-
-.radio-btn {
-    flex: 1;
     position: relative;
-    cursor: pointer;
+    transition: transform 0.08s ease-in-out, box-shadow 0.08s ease-in-out, background-color 0.1s ease;
+    white-space: nowrap;
 }
 
-.radio-btn input {
-    position: absolute;
-    opacity: 0;
-    cursor: pointer;
+/* Click / Push microinteraction */
+.btn:active {
+    transform: translateY(3px);  /* Pushes down on click */
 }
 
-.radio-btn span {
-    display: block;
-    text-align: center;
-    padding: 0.75rem;
-    background: rgba(0,0,0,0.2);
-    border: 1px solid var(--border-color);
-    border-radius: 0.5rem;
-    transition: all 0.2s;
-    color: var(--text-secondary);
+/* Neutral Grayish-Olive Button (Restart) */
+.btn-neutral {
+    background-color: var(--neutral-main);
+    color: #f0f4ec;
+    box-shadow: 0 3px 0 var(--neutral-shadow);
 }
 
-.radio-btn:hover span {
-    background: rgba(255,255,255,0.05);
+.btn-neutral:hover {
+    background-color: #555d4d;
 }
 
-.radio-btn input:checked ~ span {
-    background: var(--accent-primary);
-    border-color: var(--accent-primary);
-    color: white;
-    font-weight: 600;
+.btn-neutral:active {
+    box-shadow: 0 0 0 var(--neutral-shadow);
 }
 
-footer {
-    text-align: center;
-    color: var(--text-secondary);
-    margin-top: 2rem;
-    font-size: 0.9rem;
-    animation: fadeIn 1s ease-in;
+/* Primary Green Button (Play Again in Modal) */
+.btn-primary {
+    background-color: var(--green-main);
+    color: #ffffff;
+    box-shadow: 0 3px 0 var(--green-shadow);
 }
 
-/* Modal styles */
+.btn-primary:hover {
+    background-color: #529c1a;
+}
+
+.btn-primary:active {
+    box-shadow: 0 0 0 var(--green-shadow);
+}
+
+/* Secondary Brown Button (Connect) */
+.btn-secondary {
+    background-color: var(--brown-main);
+    color: #ffffff;
+    box-shadow: 0 3px 0 var(--brown-shadow);
+}
+
+.btn-secondary:hover {
+    background-color: #b57740;
+}
+
+.btn-secondary:active {
+    box-shadow: 0 0 0 var(--brown-shadow);
+}
+
+/* Modal */
 .modal {
     position: fixed;
     top: 0;
     left: 0;
     width: 100%;
     height: 100%;
-    background: rgba(0,0,0,0.8);
+    background: rgba(0, 0, 0, 0.75);
     display: flex;
     justify-content: center;
     align-items: center;
     z-index: 100;
-    opacity: 1;
-    transition: opacity 0.3s;
-    backdrop-filter: blur(5px);
 }
 
 .modal.hidden {
-    opacity: 0;
-    pointer-events: none;
+    display: none;
 }
 
 .modal-content {
-    background: var(--bg-secondary);
-    border: 1px solid var(--glass-border);
-    padding: 2.5rem;
-    border-radius: 1.5rem;
+    background: var(--card-bg);
+    padding: 1.75rem;
+    border-radius: 12px;
     text-align: center;
-    max-width: 400px;
+    max-width: 340px;
     width: 90%;
-    transform: scale(1);
-    transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-    box-shadow: 0 25px 50px -12px rgba(0,0,0,0.5);
-}
-
-.modal.hidden .modal-content {
-    transform: scale(0.9);
 }
 
 .modal-content h2 {
-    font-size: 2rem;
-    margin-bottom: 1rem;
-    color: var(--text-primary);
+    font-size: 1.6rem;
+    margin-bottom: 0.5rem;
 }
 
 .modal-content p {
     color: var(--text-secondary);
-    margin-bottom: 2rem;
-    font-size: 1.1rem;
+    margin-bottom: 1.25rem;
 }
 
-/* Animations */
-@keyframes fadeInDown {
-    from { opacity: 0; transform: translateY(-20px); }
-    to { opacity: 1; transform: translateY(0); }
-}
-
-@keyframes fadeInLeft {
-    from { opacity: 0; transform: translateX(-30px); }
-    to { opacity: 1; transform: translateX(0); }
-}
-
-@keyframes fadeInRight {
-    from { opacity: 0; transform: translateX(30px); }
-    to { opacity: 1; transform: translateX(0); }
-}
-
-@keyframes fadeIn {
-    from { opacity: 0; }
-    to { opacity: 1; }
-}
-
-@keyframes spin {
-    to { transform: rotate(360deg); }
-}
-
-/* Responsive */
-@media (max-width: 900px) {
-    .game-content {
+/* Mobile responsive fallback */
+@media (max-width: 480px) {
+    .controls-row {
         flex-direction: column;
-        align-items: center;
+        align-items: stretch;
     }
     
-    .control-panel {
+    .btn {
         width: 100%;
-        max-width: 604px; /* match canvas width */
     }
-    
-    canvas {
-        max-width: 100%;
-        height: auto;
-    }
+}
+
+.credits {
+    margin-top: 1rem;
+    font-size: 0.85rem;
+    color: var(--text-secondary, #a3ac9c);
+    text-align: center;
+    letter-spacing: 0.3px;
+}
+
+.credits .author {
+    font-weight: 700;
+    color: var(--text-primary, #ffffff);
 }

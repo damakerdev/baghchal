@@ -16,6 +16,33 @@ const restartBtn = document.getElementById('restartBtn');
 
 const BOT_DELAY=2000;
 
+const goatTray = document.getElementById('goatTray');
+let lastCaptured=0;
+
+function updateGoatTray(capturedGoats,animate=true){
+    const slots=goatTray.querySelectorAll('.goat-slot');
+    slots.forEach((slot,i)=>{
+        const shouldBeDead=i<capturedGoats;
+        const isDead=slot.classList.contains('.dead');
+        if(shouldBeDead&&!isDead){
+            slot.textContent='💀';
+            slot.classList.add('dead');
+            if(animate && i>=lastCaptured){
+                slot.style.animation='none';
+                void slot.offsetWidth;
+                slot.style.animation='';
+            }
+        } else if ( !shouldBeDead && isDead){
+            slot.textContent='🐐';
+            slot.classList.remove('dead');
+        }
+    });
+    lastCaptured=capturedGoats;
+}
+
+
+updateGoatTray(0, false);   
+
 if (localStorage.getItem('baghchal_bot_url')) {
     apiUrlInput.value = localStorage.getItem('baghchal_bot_url');
 }
@@ -33,6 +60,7 @@ restartBtn.addEventListener('click',()=>{
     apiStatus.textContent='Idle';
     apiStatus.style.color='#4caf50';
     document.getElementById('gameOverModal').classList.add('hidden');
+    updateGoatTray(0, false); 
 })
 
 
@@ -64,6 +92,7 @@ async function sendState(requestedObx) {
 
         if (newObx && typeof newObx === 'string') {
             game.setObx(newObx);
+            updateGoatTray(game.getBoard().capturedGoats);   
             const status=Baghchal.isWin(newObx);
             if(status.gameOver){
                 game.setAcceptMouseInput(false);

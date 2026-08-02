@@ -86,7 +86,7 @@ const std::vector<CaptureJump> captureMoveConnMatrix[25] = {
     {{23, 22}, {11, 16}},
     {{24, 23}, {20, 21}, {12, 17}, {14, 18}, {10, 16}},
     {{21, 22}, {13, 18}},
-    {{22, 23}, {19, 18}, {12, 18}}};
+    {{22, 23}, {14, 18}, {12, 18}}};
 
 const int tigerPositionWeights[25]{6,  5,  10, 5,  6,  5,  11, 7,  11,
                                    5,  10, 7,  16, 7,  10, 5,  11, 7,
@@ -121,6 +121,8 @@ ostream &operator<<(ostream &os, const GameState &state) {
      << "\nCAPTURED: " << state.capturedGoats << endl;
   return os;
 }
+
+
 
 string decodeUrl(const string &str) {
   string result = "";
@@ -286,10 +288,16 @@ int evaluateBoard(const GameState &state) {
     return -10000;
   }
   int score = 0;
-  score += state.capturedGoats * 500;
+  score += state.capturedGoats *1200;
+
+  //if ate 4 goats-> urgently hunts for the 5th one 
+  if(state.capturedGoats==4){
+    score+=800;
+  }
+
   for (int i = 0; i < 25; ++i) {
     if (state.board[i] == 'T') {
-      score += tigerPositionWeights[i] * 60;
+      score += tigerPositionWeights[i] * 20;
     } else if (state.board[i] == 'G') {
       score -= tigerPositionWeights[i] * 5;
     }
@@ -346,6 +354,7 @@ Move getBestMove(const GameState &state, int depth, int &bestScore) {
   for (const auto &move : moves) {
     GameState nextState = applyMove(state, move);
     int moveVal = minimax(nextState, depth - 1, -100000, 100000, !isTiger);
+
     if (isTiger) {
       if (moveVal > bestVal) {
         bestVal = moveVal;

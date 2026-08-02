@@ -33,7 +33,6 @@ restartBtn.addEventListener('click',()=>{
     apiStatus.textContent='Idle';
     apiStatus.style.color='#4caf50';
     document.getElementById('gameOverModal').classList.add('hidden');
-    updateTurnIndicator();
 })
 
 
@@ -65,7 +64,6 @@ async function sendState(requestedObx) {
 
         if (newObx && typeof newObx === 'string') {
             game.setObx(newObx);
-            updateTurnIndicator();
             const status=Baghchal.isWin(newObx);
             if(status.gameOver){
                 game.setAcceptMouseInput(false);

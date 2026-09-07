@@ -1,5 +1,5 @@
-# baghchal engine [WIP]
-### goal: stockfish for baghchal
+# baghchal engine | BLACKBIRD 🐦‍⬛ 
+### goal: stockfish for baghchal [WIP]
 
 a c++ implementation of Baghchal.
 soon to be a full blown game engine with baghchal bots. :D
@@ -10,3 +10,4 @@ a basic web implementation of Baghchal so that users can play with `baghchal eng
 
 [Click here to play Baghchal with our bot](https://damakerdev.github.io/baghchal/web/index.html)
 *you need to run the `main.cpp` somewhere and put the link to the server in the Set API field to be able to play with the bot*
+

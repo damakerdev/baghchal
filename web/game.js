@@ -1,6 +1,6 @@
 const initialObx = 'TXXXT/XXXXX/XXXXX/XXXXX/TXXXT g @20 c0 -';
 
-const DEFAULT_RENDER_URL = 'https://baghchal.onrender.com/';
+const DEFAULT_RENDER_URL = 'https://baghchal-0z87.onrender.com';
 localStorage.setItem('baghchal_bot_url', DEFAULT_RENDER_URL);
 
 const game = new Baghchal('#myBaghchalBoard', initialObx, {

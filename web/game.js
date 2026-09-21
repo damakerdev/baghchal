@@ -5,6 +5,7 @@ const game = new Baghchal('#myBaghchalBoard', initialObx, {
     loopCaptureAnimation: true,
     showStateInfo: true,
     acceptMouseInput: true,
+    themeColor: '#439404',
     accentColor: '#f8fafc',
     onPlayerMove: (requestedObx) => sendState(requestedObx)
 });
@@ -65,7 +66,6 @@ saveApiBtn.addEventListener('click', () => {
 restartBtn.addEventListener('click',()=>{
     game.setObx(initialObx);
     game.setAcceptMouseInput(true);
-    updateStatus("Status: Connected", "#58cc02");
     document.getElementById('gameOverModal').classList.add('hidden');
 })
 

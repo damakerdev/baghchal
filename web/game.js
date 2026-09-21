@@ -1,5 +1,8 @@
 const initialObx = 'TXXXT/XXXXX/XXXXX/XXXXX/TXXXT g @20 c0 -';
 
+const DEFAULT_RENDER_URL = 'https://baghchal.onrender.com/';
+localStorage.setItem('baghchal_bot_url', DEFAULT_RENDER_URL);
+
 const game = new Baghchal('#myBaghchalBoard', initialObx, {
     width: 420,
     loopCaptureAnimation: true,
@@ -14,60 +17,79 @@ const apiUrlInput = document.getElementById('botApiUrl');
 const saveApiBtn = document.getElementById('saveApiBtn');
 const apiStatus = document.getElementById('apiStatus');
 const restartBtn = document.getElementById('restartBtn');
-const BOT_DELAY=2000;
+const BOT_DELAY=1000;
 
-let currentApiUrl=apiUrlInput.value.trim();
-async function testApiConnection(url){
-    if(!url){
-        updateStatus("Status: Please enter a URL", "#ff9800");
-        return false;
-    }
+const savedUrl = localStorage.getItem('baghchal_bot_url');
+apiUrlInput.value = savedUrl ? savedUrl : DEFAULT_RENDER_URL;
+if (apiUrlInput) {
+    apiUrlInput.value = DEFAULT_RENDER_URL;
+    apiUrlInput.placeholder = "custom API URL";
+    apiUrlInput.title = "default is Render server. edit only if you know what you are doing.";
+}
 
-    updateStatus("Status: Connection...","#a3ac9c");
+if (saveApiBtn) {
+    saveApiBtn.textContent = "Connect to API";
+    saveApiBtn.title = "Connect to a custom backend server";
+}
 
-    try{
-        const response=await fetch(url,{
-            method:'POST',
-            headers:{'Content-Type':'application/json'},
-            body:JSON.stringify({obx:initialObx}),
-            signal:AbortSignal.timeout(4000)
-        })
-        if(response.ok){
-            updateStatus("Status: Connected","#58cc02")
-            currentApiUrl=url;
+let currentApiUrl = DEFAULT_RENDER_URL;
+testApiConnection(currentApiUrl);
+
+async function testApiConnection(url) {
+    const isCustom = url.trim() !== DEFAULT_RENDER_URL;
+    updateStatus("Status: Connecting to Server...", "#a3ac9c");
+
+    try {
+        const testUrl = `${url}?obx=${encodeURIComponent(initialObx)}`;
+        const response = await fetch(testUrl, {
+            method: 'GET',
+            headers: { 'Content-Type': 'application/json' },
+            signal: AbortSignal.timeout(6000)
+        });
+
+        if (response.ok) {
+            const statusMsg = isCustom 
+                ? "Status: Connected to Custom Backend" 
+                : "Status: Connected to Backend Server";
+            updateStatus(statusMsg, "#58cc02");
+            currentApiUrl = url;
             return true;
         } else {
-            updateStatus(`Status: Server error (${response.status})`,"#e65345")
+            updateStatus(`Status: Server Error (${response.status})`, "#e65345");
             return false;
         }
-    } catch(err){
-        console.error("Connection failed",err);
-        updateStatus("Status: Can't connect to bot server","#e65345")
+    } catch (err) {
+        console.error("Connection failed:", err);
+        const failMsg = isCustom
+            ? "Status: Can't connect to custom server"
+            : "Status: Waking up Backend Server...";
+        updateStatus(failMsg, isCustom ? "#e65345" : "#ff9800");
         return false;
     }
 }
 
 function updateStatus(text,color){
     apiStatus.textContent=text;
-    apiStatus.color=color;
+    if (color) apiStatus.style.color = color;
 }
 
-if (localStorage.getItem('baghchal_bot_url')) {
-    apiUrlInput.value = localStorage.getItem('baghchal_bot_url');
+if (saveApiBtn) {
+    saveApiBtn.addEventListener('click', () => {
+        const customUrl = apiUrlInput.value.trim();
+        if (customUrl) {
+            testApiConnection(customUrl);
+        } else {
+            apiUrlInput.value = DEFAULT_RENDER_URL;
+            testApiConnection(DEFAULT_RENDER_URL);
+        }
+    });
 }
-
-saveApiBtn.addEventListener('click', () => {
-    localStorage.setItem('baghchal_bot_url', apiUrlInput.value.trim());
-    apiStatus.textContent = 'API URL Saved!';
-    apiStatus.style.color = '#4caf50';
-    setTimeout(() => { apiStatus.textContent = 'Idle'; apiStatus.style.color = '#888'; }, 2000);
-});
-
-restartBtn.addEventListener('click',()=>{
+restartBtn.addEventListener('click', () => {
     game.setObx(initialObx);
     game.setAcceptMouseInput(true);
     document.getElementById('gameOverModal').classList.add('hidden');
-})
+    updateStatus("Status: Connected to Backend Server", "#58cc02");
+});
 
 
 function wait(ms){
@@ -75,7 +97,7 @@ function wait(ms){
 }
 
 async function sendState(requestedObx) {
-    const apiUrl = apiUrlInput.value.trim()||currentApiUrl;
+    const apiUrl = apiUrlInput.value.trim() || currentApiUrl || DEFAULT_RENDER_URL;
     if (!apiUrl) {
         console.warn('Bot API URL is empty');
         updateStatus("Status: Bot URL not set", "#ff9800");
